@@ -19,11 +19,7 @@
 
 ### 2. 配置
 
-```bash
-cp config.example.json config.json
-```
-
-编辑 `config.json`，填入 Token 和 Chat ID：
+将 `config.example.json` 复制为 `config.json`，编辑填入 Token 和 Chat ID：
 
 ```json
 {
