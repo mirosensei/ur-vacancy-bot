@@ -50,9 +50,9 @@ function describe(name, fn) {
 }
 
 // standalone it (for tests not inside a describe block)
-function it(name, fn) {
+async function it(name, fn) {
   try {
-    fn();
+    await fn();
     passed++;
     console.log(`  ${colors.green}✓${colors.reset} ${name}`);
   } catch (e) {

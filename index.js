@@ -181,6 +181,7 @@ async function main() {
 
   // ── 并发锁 ──
   let checking = false;
+  const urlCorrections = new Set();  // 线程安全的 URL 修正收集
 
   // ── 检查单个物件（一次遍历 rooms，避免重复过滤） ──
   async function checkOne(p) {
@@ -194,6 +195,16 @@ async function main() {
         if (r.id) {
           roomIds.push(r.id);
           roomMap.set(r.id, r);
+        }
+      }
+
+      // 有空房时用 API 返回的 block/tdfk 修正 URL（add 时的推测可能不准）
+      if (roomIds.length > 0 && rooms[0].block && rooms[0].tdfk) {
+        const code = `${p.shisya}_${p.danchi}${p.shikibetu || "0"}`;
+        const correctUrl = `https://www.ur-net.go.jp/chintai/${rooms[0].block}/${rooms[0].tdfk}/${code}.html`;
+        if (p.url !== correctUrl) {
+          p.url = correctUrl;
+          urlCorrections.add(p);  // 收集，checkAll 结束时批量保存
         }
       }
     }
@@ -261,6 +272,12 @@ async function main() {
     const results = await runWithConcurrency(props, checkOne, concurrency);
 
     state.endBatch();
+
+    // 批量保存 URL 修正
+    if (urlCorrections.size > 0) {
+      urlCorrections.clear();
+      saveConfig(cfg);
+    }
 
     // 聚合结果
     let checked = 0, notified = 0, newTotal = 0, goneTotal = 0, suppressed = 0;
@@ -361,58 +378,43 @@ async function main() {
           return;
         }
 
-        let name = parsed.code;
+        let name = null;
         let url = "https://www.ur-net.go.jp/chintai/";
-        let initRooms = null;   // 保存初始化时的房间列表，用于回复消息
+        let nameResolved = false;
 
-        // 获取团地名称、URL
-        const roomIds = [];
         try {
           const info = await api.getDanchiInfo(parsed.shisya, parsed.danchi, parsed.shikibetu);
-          name = info.name || name;
-          url = info.url || url;
-
-          const rooms = info.rooms;
-          if (rooms && Array.isArray(rooms)) {
-            initRooms = rooms;
-            for (const r of rooms) {
-              if (r.id) roomIds.push(r.id);
-            }
+          if (info.name && info.name !== parsed.code) {
+            name = info.name;
+            nameResolved = true;
           }
+          url = info.url || url;
         } catch (err) {
           console.error("获取团地信息失败:", err.message);
         }
 
-        // 无论 API 调用成功与否都初始化状态，避免 /status 显示「尚无检查记录」
-        const addRoomMap = new Map();
-        if (initRooms) {
-          for (const r of initRooms) {
-            if (r.id) addRoomMap.set(r.id, r);
-          }
-        }
-        state.update(parsed.shisya, parsed.danchi, parsed.shikibetu, roomIds, addRoomMap);
+        const displayName = nameResolved ? name : parsed.code;
 
         props.push({
-          name,
+          name: displayName,
           shisya: parsed.shisya,
           danchi: parsed.danchi,
           shikibetu: parsed.shikibetu,
           url,
         });
-        saveConfig(cfg);
 
-        // 构建回复消息，包含当前空房信息
-        let respMsg = `✅ 已添加\n📌 ${Telegram.propNameHtml({ name, url })}\n🔢 ${parsed.code}`;
-
-        if (initRooms && initRooms.length > 0) {
-          const show = initRooms.slice(0, 5);
-          const more = initRooms.length > 5 ? `\n  ... 还有 ${initRooms.length - 5} 件` : "";
-          const roomLines = show.map(r =>
-            `  ${Telegram.fmtRoomHtml(r, Telegram.roomUrl({ url }, r))}`
-          ).join("\n");
-          respMsg += `\n\n🏠 当前空房 ${initRooms.length} 件\n${roomLines}${more}`;
-        } else {
-          respMsg += `\n\n📭 当前无空房`;
+        let respMsg;
+        try {
+          saveConfig(cfg);
+          respMsg = `✅ 已添加\n📌 ${Telegram.propNameHtml({ name: displayName, url })}\n🔢 ${parsed.code}`;
+          if (!nameResolved) {
+            respMsg += `\n\n⚠ 无法确认团地名称，请检查编号是否正确`;
+          }
+        } catch (err) {
+          props.pop();
+          console.error("添加物件失败:", err.message);
+          await tg.send("❌ 添加失败，请重试", { chat_id: chatId });
+          return;
         }
 
         await tg.send(respMsg, { chat_id: chatId, parse_mode: "HTML" });
@@ -530,6 +532,12 @@ async function main() {
       }
 
       case "/check": {
+        const props = (getConfig().properties || []);
+        if (props.length === 0) {
+          await tg.send("暂无监控物件。用 /add 添加。", { chat_id: chatId });
+          return;
+        }
+
         const msgIds = await tg.send("⏳ 检查中...", { chat_id: chatId });
         const placeholderId = msgIds[0];
 
@@ -537,7 +545,7 @@ async function main() {
           const r = await checkAll();
           let result;
           if (r) {
-            const totalRooms = (getConfig().properties || []).reduce((sum, p) => {
+            const totalRooms = props.reduce((sum, p) => {
               const rooms = state.getRooms(p.shisya, p.danchi, p.shikibetu);
               return sum + (rooms ? rooms.length : 0);
             }, 0);
