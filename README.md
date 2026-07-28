@@ -20,38 +20,49 @@
 - 通过 [@BotFather](https://t.me/BotFather) 创建 Bot，获取 Token
 - 给 [@userinfobot](https://t.me/userinfobot) 发消息，获取 Chat ID
 
-### 2. 准备文件
+### 2. 创建 docker-compose.yml
 
-```bash
-git clone https://github.com/mirosensei/ur-vacancy-bot.git
-cd ur-vacancy-bot
-cp config.example.json config.json
+```yaml
+services:
+  bot:
+    image: mirosensei/ur-vacancy-bot:latest
+    container_name: ur-vacancy-bot
+    restart: unless-stopped
+    volumes:
+      - ./config.json:/app/config.json
+      - ./state.json:/app/state.json
+      - ./logs:/app/logs
+    environment:
+      - BOT_TOKEN=123456:ABC...      # ← 替换为你的 Bot Token
+      - CHAT_ID=123456789            # ← 替换为你的 Chat ID
+      - TZ=Asia/Tokyo
 ```
 
-编辑 `config.json`，填入 Token 和 Chat ID：
+将 `BOT_TOKEN` 和 `CHAT_ID` 替换为第 1 步获取的值。
 
-```json
-{
-  "telegram": {
-    "botToken": "YOUR_BOT_TOKEN",
-    "chatId": "YOUR_CHAT_ID"
-  },
-  "checkIntervalMinutes": 10,
-  "properties": []
-}
-```
-
-### 3. 运行
-
-镜像已发布在 [Docker Hub](https://hub.docker.com/r/mirosensei/ur-vacancy-bot)，直接拉取运行：
+### 3. 启动
 
 ```bash
 docker compose up -d
 ```
 
-首次启动会自动从 Docker Hub 拉取镜像，无需本地构建。
+首次启动会自动从 [Docker Hub](https://hub.docker.com/r/mirosensei/ur-vacancy-bot) 拉取镜像，并自动创建配置文件。之后用 `/add <编号>` 添加监控物件即可。
 
-> 如果想从源码构建，把 `docker-compose.yml` 中的 `image:` 改为 `build: .` 即可。
+> 💡 **无需 clone 仓库**，只需这一个 `docker-compose.yml` 文件就能跑起来。
+
+<details>
+<summary>备选：从源码构建</summary>
+
+```bash
+git clone https://github.com/mirosensei/ur-vacancy-bot.git
+cd ur-vacancy-bot
+cp config.example.json config.json
+# 编辑 config.json 填入 token/chatId
+```
+
+然后把 `docker-compose.yml` 中的 `image:` 改为 `build: .` 即可。
+
+</details>
 
 ## 测试
 
@@ -83,18 +94,20 @@ node test/run_all.js
 
 ## 配置参考
 
-`config.json` 完整字段：
+通过环境变量配置（推荐），也可手动编辑 `config.json`：
 
-| 字段 | 说明 | 默认值 |
-|------|------|--------|
-| `telegram.botToken` | Bot Token | — |
-| `telegram.chatId` | 接收通知的 Chat ID | — |
-| `checkIntervalMinutes` | 检查间隔（分钟） | `10` |
-| `minApiInterval` | API 最小间隔（毫秒） | `1500` |
-| `timeout` | API 超时（毫秒） | `15000` |
-| `maxRetries` | API 重试次数 | `2` |
-| `concurrency` | 并行检查数 | `3` |
-| `properties` | 监控物件列表 | `[]` |
+| 环境变量 | config.json 字段 | 说明 | 默认值 |
+|----------|-----------------|------|--------|
+| `BOT_TOKEN` | `telegram.botToken` | Bot Token | — |
+| `CHAT_ID` | `telegram.chatId` | 接收通知的 Chat ID | — |
+| `CHECK_INTERVAL` | `checkIntervalMinutes` | 检查间隔（分钟） | `10` |
+| `CONCURRENCY` | `concurrency` | 并行检查数 | `3` |
+| — | `minApiInterval` | API 最小间隔（毫秒） | `1500` |
+| — | `timeout` | API 超时（毫秒） | `15000` |
+| — | `maxRetries` | API 重试次数 | `2` |
+| — | `properties` | 监控物件列表（自动管理） | `[]` |
+
+> 环境变量优先于 `config.json` — 如果在 compose 中修改了 `BOT_TOKEN`，下次启动会自动更新配置文件。
 
 ## 项目结构
 
@@ -102,10 +115,10 @@ node test/run_all.js
 ur-vacancy-bot/
 ├── index.js              主入口 — 调度、指令处理
 ├── config.example.json   配置文件模板
-├── config.json           配置文件（需自行创建）
+├── config.json           配置文件（自动创建）
 ├── state.json            状态持久化（自动生成）
 ├── Dockerfile
-├── docker-compose.yml
+├── docker-compose.yml     需自行创建（见快速开始）
 ├── lib/
 │   ├── api.js            UR API 客户端 — 速率限制、UA 轮换、重试
 │   ├── fetch4.js         强制 IPv4 的 fetch 实现

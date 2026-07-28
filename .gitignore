@@ -7,3 +7,5 @@ state.json
 config.json
 *.log
 .env
+docker-compose.yml
+docker-compose.override.yml

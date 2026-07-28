@@ -63,24 +63,59 @@ const TELEGRAM_API = "https://api.telegram.org";
 let configCache = null;
 
 function loadConfig() {
-  // 检查 config.json 是否被 Docker 误创建为目录（卷挂载时源文件不存在会这样）
+  const defaults = {
+    telegram: {
+      botToken: process.env.BOT_TOKEN || "",
+      chatId: process.env.CHAT_ID || "",
+    },
+    checkIntervalMinutes: parseInt(process.env.CHECK_INTERVAL) || 10,
+    minApiInterval: 1500,
+    timeout: 15000,
+    maxRetries: 2,
+    concurrency: parseInt(process.env.CONCURRENCY) || 3,
+    properties: [],
+  };
+
+  // 处理 Docker 卷挂载将 config.json 误创建为目录的情况
   if (fs.existsSync(CONFIG_PATH) && fs.statSync(CONFIG_PATH).isDirectory()) {
-    console.error("❌ config.json 是一个目录，请创建文件而非目录:");
-    console.error("   cp config.example.json config.json");
-    console.error("   然后编辑 config.json 填入你的 Telegram Bot Token 和 Chat ID");
-    process.exit(1);
+    fs.rmdirSync(CONFIG_PATH);
+    console.log("⚠ config.json 是目录，已移除");
   }
 
+  // 文件不存在 → 用环境变量 + 默认值自动创建
   if (!fs.existsSync(CONFIG_PATH)) {
-    console.error("❌ config.json 不存在，请先创建配置文件:");
-    console.error("   cp config.example.json config.json");
-    console.error("   然后编辑 config.json 填入你的 Telegram Bot Token 和 Chat ID");
-    process.exit(1);
+    if (!defaults.telegram.botToken || !defaults.telegram.chatId) {
+      console.error("❌ 未配置 Telegram，请设置环境变量 BOT_TOKEN 和 CHAT_ID");
+      console.error("   或手动创建 config.json (参考 config.example.json)");
+      process.exit(1);
+    }
+    try {
+      fs.writeFileSync(CONFIG_PATH, JSON.stringify(defaults, null, 2), "utf-8");
+      console.log("✅ 已自动创建 config.json");
+    } catch (err) {
+      console.error("❌ 创建配置文件失败:", err.message);
+      process.exit(1);
+    }
+    configCache = defaults;
+    return configCache;
   }
 
+  // 文件存在 → 读取，环境变量优先覆盖（仅内存覆盖，不写回磁盘）
   try {
     const raw = fs.readFileSync(CONFIG_PATH, "utf-8");
-    configCache = JSON.parse(raw);
+    const config = JSON.parse(raw);
+
+    // 环境变量始终优先（方便在 compose 里临时覆盖）
+    if (process.env.BOT_TOKEN) {
+      if (!config.telegram) config.telegram = {};
+      config.telegram.botToken = process.env.BOT_TOKEN;
+    }
+    if (process.env.CHAT_ID) {
+      if (!config.telegram) config.telegram = {};
+      config.telegram.chatId = process.env.CHAT_ID;
+    }
+
+    configCache = config;
     return configCache;
   } catch (err) {
     console.error("❌ 配置文件读取失败:", err.message);
