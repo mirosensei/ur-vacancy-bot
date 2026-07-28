@@ -1,6 +1,6 @@
 # UR 空房监控 Telegram Bot
 
-定时监控 [UR 都市機構](https://www.ur-net.go.jp/chintai/) 团地空房变动，通过 Telegram 发送通知。
+定时监控 [UR 都市機構](https://www.ur-net.go.jp/chintai/) 团地空房变动，通过 Telegram 发送通知
 
 ## 功能
 
@@ -8,6 +8,10 @@
 - 5 分钟抖动去重，避免同一房间反复通知
 - Telegram 指令控制：添加、删除、查看、手动检查
 - 支持 Docker 部署
+
+## 环境要求
+
+只需安装 Docker
 
 ## 快速开始
 
@@ -55,7 +59,7 @@ node test/run_all.js
 
 ## 编号格式
 
-在 [UR 网站](https://www.ur-net.go.jp/chintai/) 找到目标团地，URL 中的编号即为 `支社_団地識別`。
+在 [UR 网站](https://www.ur-net.go.jp/chintai/) 找到目标团地，URL 中的编号即为 `支社_団地識別`
 
 例如 `https://www.ur-net.go.jp/chintai/kansai/osaka/80_0420.html` → `/add 80_0420`
 
@@ -84,9 +88,12 @@ node test/run_all.js
 
 ```
 ur-vacancy-bot/
-├── index.js             主入口 — 调度、指令处理
-├── config.json           配置文件
+├── index.js              主入口 — 调度、指令处理
+├── config.example.json   配置文件模板
+├── config.json           配置文件（需自行创建）
 ├── state.json            状态持久化（自动生成）
+├── Dockerfile
+├── docker-compose.yml
 ├── lib/
 │   ├── api.js            UR API 客户端 — 速率限制、UA 轮换、重试
 │   ├── fetch4.js         强制 IPv4 的 fetch 实现

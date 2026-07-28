@@ -63,12 +63,27 @@ const TELEGRAM_API = "https://api.telegram.org";
 let configCache = null;
 
 function loadConfig() {
+  // 检查 config.json 是否被 Docker 误创建为目录（卷挂载时源文件不存在会这样）
+  if (fs.existsSync(CONFIG_PATH) && fs.statSync(CONFIG_PATH).isDirectory()) {
+    console.error("❌ config.json 是一个目录，请创建文件而非目录:");
+    console.error("   cp config.example.json config.json");
+    console.error("   然后编辑 config.json 填入你的 Telegram Bot Token 和 Chat ID");
+    process.exit(1);
+  }
+
+  if (!fs.existsSync(CONFIG_PATH)) {
+    console.error("❌ config.json 不存在，请先创建配置文件:");
+    console.error("   cp config.example.json config.json");
+    console.error("   然后编辑 config.json 填入你的 Telegram Bot Token 和 Chat ID");
+    process.exit(1);
+  }
+
   try {
     const raw = fs.readFileSync(CONFIG_PATH, "utf-8");
     configCache = JSON.parse(raw);
     return configCache;
   } catch (err) {
-    console.error("配置文件读取失败:", err.message);
+    console.error("❌ 配置文件读取失败:", err.message);
     process.exit(1);
   }
 }
@@ -137,6 +152,19 @@ async function main() {
   const once = args.includes("--once");
 
   const config = loadConfig();
+
+  // 确保 state.json 存在且为文件（Docker 卷挂载时源文件不存在会创建目录）
+  if (fs.existsSync(STATE_PATH)) {
+    if (fs.statSync(STATE_PATH).isDirectory()) {
+      fs.rmdirSync(STATE_PATH);
+      fs.writeFileSync(STATE_PATH, "{}", "utf-8");
+      console.log("⚠ state.json 是目录，已替换为文件");
+    }
+  } else {
+    fs.writeFileSync(STATE_PATH, "{}", "utf-8");
+    console.log("✅ 已创建 state.json");
+  }
+
   const api = new ApiClient({
     minInterval: config.minApiInterval || 1500,
     timeout: config.timeout || 15000,

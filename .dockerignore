@@ -1,0 +1,13 @@
+.git
+.gitignore
+README.md
+LICENSE
+config.json
+config.example.json
+state.json
+logs
+test
+.claude
+docker-compose.yml
+Dockerfile
+.dockerignore
