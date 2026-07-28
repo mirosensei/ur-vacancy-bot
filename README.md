@@ -35,12 +35,15 @@
 ### 3. 运行
 
 ```bash
-# Docker（推荐）
+cp config.example.json config.json
+# 编辑 config.json 填入 Token 和 Chat ID
 docker compose up -d
+```
 
-# 或直接运行
-npm start              # 持续运行
-node index.js --once   # 单次检查
+## 测试
+
+```bash
+node test/run_all.js
 ```
 
 ## Telegram 指令
