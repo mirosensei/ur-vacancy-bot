@@ -1,0 +1,11 @@
+services:
+  bot:
+    build: .
+    container_name: ur-vacancy-bot
+    restart: unless-stopped
+    volumes:
+      - ./config.json:/app/config.json
+      - ./state.json:/app/state.json
+      - ./logs:/app/logs
+    environment:
+      - TZ=Asia/Tokyo

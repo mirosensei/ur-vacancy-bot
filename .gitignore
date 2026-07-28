@@ -1,0 +1,9 @@
+# Claude
+.claude/settings.local.json.tmp.*
+
+# gitignore
+node_modules/
+state.json
+config.json
+*.log
+.env
