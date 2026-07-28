@@ -48,8 +48,6 @@ docker compose up -d
 
 首次启动会自动从 [Docker Hub](https://hub.docker.com/r/mirosensei/ur-vacancy-bot) 拉取镜像，并自动创建配置文件。之后用 `/add <编号>` 添加监控物件即可。
 
-> 💡 **无需 clone 仓库**，只需这一个 `docker-compose.yml` 文件就能跑起来。
-
 <details>
 <summary>备选：从源码构建</summary>
 
@@ -79,6 +77,7 @@ node test/run_all.js
 | `/list` | 查看监控列表（物件名可点击） |
 | `/status` | 查看当前空房状态（房间名可点击） |
 | `/check` | 立即手动检查 |
+| `/ping` | 检测服务端死活 (回复 pong) |
 
 ## 编号格式
 

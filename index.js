@@ -365,7 +365,8 @@ async function main() {
           `🗑  /remove &lt;编号&gt;  — 删除监控物件\n` +
           `📋  /list  — 查看监控列表\n` +
           `🏠  /status  — 查看当前空房\n` +
-          `🔍  /check  — 立即检查`,
+          `🔍  /check  — 立即检查\n` +
+          `🏓  /ping  — 检测服务端`,
           { chat_id: chatId, parse_mode: "HTML" }
         );
         break;
@@ -604,6 +605,10 @@ async function main() {
         }
         break;
       }
+
+      case "/ping":
+        await tg.send("pong", { chat_id: chatId });
+        break;
 
       default:
         if (cmd.startsWith("/")) {
