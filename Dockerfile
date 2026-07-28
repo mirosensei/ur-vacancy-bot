@@ -4,7 +4,6 @@ RUN apk add --no-cache nodejs
 
 WORKDIR /app
 
-COPY package.json ./
 COPY index.js ./
 COPY lib/ ./lib/
 
