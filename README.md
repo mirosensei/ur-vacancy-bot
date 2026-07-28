@@ -19,7 +19,11 @@
 
 ### 2. 配置
 
-编辑 `config.json`：
+```bash
+cp config.example.json config.json
+```
+
+编辑 `config.json`，填入 Token 和 Chat ID：
 
 ```json
 {
@@ -35,8 +39,6 @@
 ### 3. 运行
 
 ```bash
-cp config.example.json config.json
-# 编辑 config.json 填入 Token 和 Chat ID
 docker compose up -d
 ```
 
