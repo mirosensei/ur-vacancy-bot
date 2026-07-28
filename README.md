@@ -20,9 +20,15 @@
 - 通过 [@BotFather](https://t.me/BotFather) 创建 Bot，获取 Token
 - 给 [@userinfobot](https://t.me/userinfobot) 发消息，获取 Chat ID
 
-### 2. 配置
+### 2. 准备文件
 
-将 `config.example.json` 复制为 `config.json`，编辑填入 Token 和 Chat ID：
+```bash
+git clone https://github.com/mirosensei/ur-vacancy-bot.git
+cd ur-vacancy-bot
+cp config.example.json config.json
+```
+
+编辑 `config.json`，填入 Token 和 Chat ID：
 
 ```json
 {
@@ -37,9 +43,15 @@
 
 ### 3. 运行
 
+镜像已发布在 [Docker Hub](https://hub.docker.com/r/mirosensei/ur-vacancy-bot)，直接拉取运行：
+
 ```bash
 docker compose up -d
 ```
+
+首次启动会自动从 Docker Hub 拉取镜像，无需本地构建。
+
+> 如果想从源码构建，把 `docker-compose.yml` 中的 `image:` 改为 `build: .` 即可。
 
 ## 测试
 

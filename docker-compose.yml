@@ -1,6 +1,6 @@
 services:
   bot:
-    build: .
+    image: mirosensei/ur-vacancy-bot:latest
     container_name: ur-vacancy-bot
     restart: unless-stopped
     volumes:
