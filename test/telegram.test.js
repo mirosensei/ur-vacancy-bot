@@ -101,8 +101,8 @@ describe("Telegram", () => {
     const msg = tg.formatChange(prop, [r1l], [], [r1l, r2l]);
     assert(msg.includes('<a href="https://www.ur-net.go.jp/detail/r1.html">101号室</a>'), "new room has detail link");
     assert(msg.includes('<a href="https://www.ur-net.go.jp/detail/r2.html">205号室</a>'), "current room has detail link");
-    // 两行排版
-    assert(msg.includes("- 85000円 · 2DK · 50㎡ · 3"), "detail line with dash");
+    // 两行排版：第一行 房间号 · 租 XX円，第二行 - 詳細
+    assert(msg.includes("205号室</a> · 租 92000円\n  - 3DK · 65㎡ · 1"), "detail line with price on same line");
     const lines = msg.split("\n");
     assert(lines.find(l => l === "https://example.com") === undefined, "no standalone property URL");
   });
@@ -111,7 +111,7 @@ describe("Telegram", () => {
     const r = { id: "01", name: "1016号室", rent: "82,000円", type: "1LDK", floorspace: "43&#13217;", floor: "10階" };
     const html = Telegram.fmtRoomHtml(r, "https://example.com/room");
     assert(html.includes('<a href="https://example.com/room">1016号室</a>'), "first line has linked name");
-    assert(html.includes("\n  - 82,000円 · 1LDK · 43㎡ · 10階"), "second line has dash prefix");
+    assert(html.includes("租 82,000円\n  - 1LDK · 43㎡ · 10階"), "second line has type/area/floor");
   });
 
   it("formatChange 有新增也有现有空房", () => {
