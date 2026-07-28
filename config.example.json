@@ -1,0 +1,12 @@
+{
+  "telegram": {
+    "botToken": "YOUR_BOT_TOKEN",
+    "chatId": "YOUR_CHAT_ID"
+  },
+  "checkIntervalMinutes": 10,
+  "minApiInterval": 1500,
+  "timeout": 15000,
+  "maxRetries": 2,
+  "concurrency": 3,
+  "properties": []
+}
