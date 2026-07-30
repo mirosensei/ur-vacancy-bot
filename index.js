@@ -33,6 +33,7 @@ const Telegram = require("./lib/telegram");
 const CONFIG_PATH = path.join(__dirname, "data", "config.json");
 const STATE_PATH = path.join(__dirname, "data", "state.json");
 const LOG_PATH = path.join(__dirname, "logs", "bot.log");
+const TZ = process.env.TZ || "Asia/Tokyo";
 const TELEGRAM_API = "https://api.telegram.org";
 
 // ── 日志 tee：同时输出到 stdout 和文件 ──
@@ -44,7 +45,7 @@ const TELEGRAM_API = "https://api.telegram.org";
   const origLog = console.log;
   const origErr = console.error;
 
-  const ts = () => new Date().toLocaleString("sv-SE", { timeZone: "Asia/Tokyo" });
+  const ts = () => new Date().toLocaleString("sv-SE", { timeZone: TZ });
 
   console.log = (...args) => {
     origLog(...args);
@@ -559,7 +560,7 @@ async function main() {
 
         const desc = total > 0 ? `合计 ${total} 件空房` : "全部无空房";
         const footer = latestCheck
-          ? `上次更新: ${new Date(latestCheck).toLocaleString("zh-CN", { timeZone: "Asia/Tokyo" })}`
+          ? `上次更新: ${new Date(latestCheck).toLocaleString("zh-CN", { timeZone: TZ })}`
           : "尚无检查记录";
         const result = `📊 空房状态\n\n${blocks.join("\n\n")}\n\n${desc}\n${footer}`;
 
