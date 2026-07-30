@@ -3,8 +3,7 @@
 
 # gitignore
 node_modules/
-state.json
-config.json
+data/
 *.log
 .env
 docker-compose.yml

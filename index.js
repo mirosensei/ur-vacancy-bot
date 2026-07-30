@@ -30,8 +30,8 @@ const { ApiClient } = require("./lib/api");
 const StateManager = require("./lib/state");
 const Telegram = require("./lib/telegram");
 
-const CONFIG_PATH = path.join(__dirname, "config.json");
-const STATE_PATH = path.join(__dirname, "state.json");
+const CONFIG_PATH = path.join(__dirname, "data", "config.json");
+const STATE_PATH = path.join(__dirname, "data", "state.json");
 const LOG_PATH = path.join(__dirname, "logs", "bot.log");
 const TELEGRAM_API = "https://api.telegram.org";
 
@@ -185,6 +185,10 @@ async function runWithConcurrency(items, fn, concurrency = 3) {
 async function main() {
   const args = process.argv.slice(2);
   const once = args.includes("--once");
+
+  // 确保 data 目录存在（Docker volume mount 或裸机运行）
+  const dataDir = path.join(__dirname, "data");
+  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
   const config = loadConfig();
 

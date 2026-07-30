@@ -29,8 +29,7 @@ services:
     container_name: ur-vacancy-bot
     restart: unless-stopped
     volumes:
-      - ./config.json:/app/config.json
-      - ./state.json:/app/state.json
+      - ./data:/app/data
       - ./logs:/app/logs
     environment:
       - BOT_TOKEN=123456:ABC...      # ← 替换为你的 Bot Token
@@ -54,8 +53,9 @@ docker compose up -d
 ```bash
 git clone https://github.com/mirosensei/ur-vacancy-bot.git
 cd ur-vacancy-bot
-cp config.example.json config.json
-# 编辑 config.json 填入 token/chatId
+mkdir -p data
+cp config.example.json data/config.json
+# 编辑 data/config.json 填入 token/chatId
 ```
 
 然后把 `docker-compose.yml` 中的 `image:` 改为 `build: .` 即可。
@@ -114,9 +114,9 @@ node test/run_all.js
 ur-vacancy-bot/
 ├── index.js              主入口 — 调度、指令处理
 ├── config.example.json   配置文件模板
-├── config.json           配置文件（自动创建）
-├── state.json            状态持久化（自动生成）
+├── data/                 数据目录（挂载点，自动创建 config.json & state.json）
 ├── Dockerfile
+├── entrypoint.sh          容器入口 — 修复权限
 ├── docker-compose.yml     需自行创建（见快速开始）
 ├── lib/
 │   ├── api.js            UR API 客户端 — 速率限制、UA 轮换、重试

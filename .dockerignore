@@ -6,6 +6,7 @@ config.json
 config.example.json
 state.json
 logs
+data
 test
 .claude
 docker-compose.yml
