@@ -116,7 +116,6 @@ ur-vacancy-bot/
 ├── config.example.json   配置文件模板
 ├── data/                 数据目录（挂载点，自动创建 config.json & state.json）
 ├── Dockerfile
-├── entrypoint.sh          容器入口 — 修复权限
 ├── docker-compose.yml     需自行创建（见快速开始）
 ├── lib/
 │   ├── api.js            UR API 客户端 — 速率限制、UA 轮换、重试
