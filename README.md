@@ -29,7 +29,6 @@ services:
     container_name: ur-vacancy-bot
     restart: unless-stopped
     init: true
-    stop_grace_period: 60s
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
