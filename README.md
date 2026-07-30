@@ -28,6 +28,8 @@ services:
     image: mirosensei/ur-vacancy-bot:latest
     container_name: ur-vacancy-bot
     restart: unless-stopped
+    init: true
+    stop_grace_period: 60s
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
@@ -35,6 +37,10 @@ services:
       - BOT_TOKEN=123456:ABC...      # ← 替换为你的 Bot Token
       - CHAT_ID=123456789            # ← 替换为你的 Chat ID
       - TZ=Asia/Tokyo
+
+networks:
+  default:
+    name: ur-vacancy-bot_network
 ```
 
 将 `BOT_TOKEN` 和 `CHAT_ID` 替换为第 1 步获取的值。
