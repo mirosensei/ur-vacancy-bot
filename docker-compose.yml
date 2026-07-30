@@ -1,0 +1,17 @@
+services:
+  bot:
+    image: mirosensei/ur-vacancy-bot:latest
+    container_name: ur-vacancy-bot
+    restart: unless-stopped
+    init: true
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - BOT_TOKEN=8991783579:AAFqT0gL3ZGRDT8A7s4cI3nrT9fkeqggDUE
+      - CHAT_ID=1071137374
+      - TZ=Asia/Tokyo
+
+networks:
+  default:
+    name: ur-vacancy-bot_network
